@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <Product>AWS .NET deployment tool CDK Utilities</Product>
     <Description>Utility code used in CDK recipes used by the AWS .NET deployment tool. This package is not intended for direct usage.</Description>
     <PackageId>AWS.Deploy.Recipes.CDK.Common</PackageId>
@@ -76,7 +76,7 @@
 
 <Target Name="SetupNuGetCache" AfterTargets="Pack">
 
-  <SetupLocalCache NuGetPackage="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" />
+  <SetupLocalCache NuGetPackage="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" />
 
 </Target>
 
