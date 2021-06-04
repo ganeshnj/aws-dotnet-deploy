@@ -68,39 +68,39 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim-amd64 AS build
+FROM public.ecr.aws/amazonlinux/amazonlinux:latest AS build
 ARG AWS_CLI_VERSION
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=true
 
 WORKDIR /src
 COPY . .
 
-RUN echo $AWS_CLI_VERSION
+# RUN echo $AWS_CLI_VERSION
 
-RUN dotnet restore "src/AWS.Deploy.CLI/AWS.Deploy.CLI.csproj"
-WORKDIR "/src/src/AWS.Deploy.CLI"
-RUN dotnet build "AWS.Deploy.CLI.csproj" -c Release -o /app/build -p:Version=$AWS_CLI_VERSION
+# RUN dotnet restore "src/AWS.Deploy.CLI/AWS.Deploy.CLI.csproj"
+# WORKDIR "/src/src/AWS.Deploy.CLI"
+# RUN dotnet build "AWS.Deploy.CLI.csproj" -c Release -o /app/build -p:Version=$AWS_CLI_VERSION
 
-#FROM build as test
-#RUN dotnet test AWS.Deploy.sln
+# #FROM build as test
+# #RUN dotnet test AWS.Deploy.sln
 
-FROM build AS publish
-ARG AWS_CLI_VERSION
-RUN dotnet pack "AWS.Deploy.CLI.csproj" -c Release -o /app/publish -p:PackageVersion=$AWS_CLI_VERSION -p:Version=$AWS_CLI_VERSION
+# FROM build AS publish
+# ARG AWS_CLI_VERSION
+# RUN dotnet pack "AWS.Deploy.CLI.csproj" -c Release -o /app/publish -p:PackageVersion=$AWS_CLI_VERSION -p:Version=$AWS_CLI_VERSION
 
-FROM base AS final
-ARG AWS_CLI_VERSION
-WORKDIR /app
-COPY --from=publish /app/publish .
+# FROM base AS final
+# ARG AWS_CLI_VERSION
+# WORKDIR /app
+# COPY --from=publish /app/publish .
 
-#install aws deploy
-RUN dotnet tool install AWS.Deploy.CLI -g --add-source /app --version $AWS_CLI_VERSION
+# #install aws deploy
+# RUN dotnet tool install AWS.Deploy.CLI -g --add-source /app --version $AWS_CLI_VERSION
 
-# verify it worked
-RUN dotnet aws --version
+# # verify it worked
+# RUN dotnet aws --version
 
-#copy in the testing apps
-COPY /testapps /testapps
+# #copy in the testing apps
+# COPY /testapps /testapps
 
-WORKDIR /testapps
-ENTRYPOINT ["echo", "\nMake sure to start in Interactive mode:  docker run --privileged -it --entrypoint bash <imagename>'\n\nAdd your AWS creds via `aws configure`\n\nThen try `dotnet aws --help`\n\n"]
+# WORKDIR /testapps
+# ENTRYPOINT ["echo", "\nMake sure to start in Interactive mode:  docker run --privileged -it --entrypoint bash <imagename>'\n\nAdd your AWS creds via `aws configure`\n\nThen try `dotnet aws --help`\n\n"]
