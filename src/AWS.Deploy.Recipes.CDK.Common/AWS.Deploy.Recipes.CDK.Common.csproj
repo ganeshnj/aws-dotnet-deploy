@@ -35,7 +35,6 @@
       <Using Namespace="System.IO" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-            Log.LogError(NuGetPackage);
             var cdkProjectDirectory =
                             Path.Combine(
                                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
@@ -76,7 +75,7 @@
 
 <Target Name="SetupNuGetCache" AfterTargets="Pack">
 
-  <SetupLocalCache NuGetPackage="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" />
+  <SetupLocalCache NuGetPackage="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" />
 
 </Target>
 

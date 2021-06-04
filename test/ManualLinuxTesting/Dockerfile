@@ -68,7 +68,7 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 
 WORKDIR /app
 
-FROM public.ecr.aws/amazonlinux/amazonlinux:latest AS build
+FROM dotnet-devex-pipeline/default-linux-image:latest AS build
 ARG AWS_CLI_VERSION
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=true
 
