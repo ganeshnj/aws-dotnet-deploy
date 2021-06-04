@@ -33,18 +33,27 @@
     <Task>
       <Using Namespace="System" />
       <Using Namespace="System.IO" />
+      <Using Namespace="System.Diagnostics" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
+            Log.LogMessage(MessageImportance.High, "NuGetPackage");
+            Log.LogMessage(MessageImportance.High, NuGetPackage);
             var cdkProjectDirectory =
                             Path.Combine(
                                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                                 ".aws-dotnet-deploy",
                                 "Projects");
+            Log.LogMessage(MessageImportance.High, "cdkProjectDirectory");
+            Log.LogMessage(MessageImportance.High, cdkProjectDirectory);
 
             var nugetCacheDirectory =
                             Path.Combine(
                                 cdkProjectDirectory,
                                 "nuget-cache");
+
+            Log.LogMessage(MessageImportance.High, "nugetCacheDirectory");
+            Log.LogMessage(MessageImportance.High, nugetCacheDirectory);
+            Array.ForEach(Directory.GetFiles(nugetCacheDirectory), file => Log.LogMessage(MessageImportance.High, file));
             Directory.CreateDirectory(nugetCacheDirectory);
             File.Copy(NuGetPackage, Path.Combine(nugetCacheDirectory, Path.GetFileName(NuGetPackage)), true);
 
@@ -54,6 +63,9 @@
                                         "packages",
                                         "aws.deploy.recipes.cdk.common"
                                         );
+
+            Log.LogMessage(MessageImportance.High, "nugetCachePackage");
+            Log.LogMessage(MessageImportance.High, nugetCachePackage);
 
             if(Directory.Exists(nugetCachePackage))
             {
