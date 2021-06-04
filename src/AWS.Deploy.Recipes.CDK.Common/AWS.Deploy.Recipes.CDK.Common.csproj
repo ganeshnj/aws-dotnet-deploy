@@ -6,7 +6,6 @@
     <Description>Utility code used in CDK recipes used by the AWS .NET deployment tool. This package is not intended for direct usage.</Description>
     <PackageId>AWS.Deploy.Recipes.CDK.Common</PackageId>
     <PackageTags>AWS;Amazon;Deploy</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/aws/aws-dotnet-deploy</PackageProjectUrl>
   </PropertyGroup>
@@ -85,10 +84,9 @@
     </Task>
   </UsingTask>
 
-<Target Name="SetupNuGetCache" AfterTargets="Pack">
-
-  <SetupLocalCache NuGetPackage="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" />
-
+<Target Name="SetupNuGetCache" AfterTargets="Build">
+  <Exec Command="dotnet pack $(MSBuildProjectFile) --configuration=$(Configuration) --no-build"/>
+  <SetupLocalCache NuGetPackage="$(OutputPath)\..\$(PackageId).$(PackageVersion).nupkg" />
 </Target>
 
 <Import Project="..\AWS.Deploy.Constants\AWS.Deploy.Constants.projitems" Label="Shared" />
