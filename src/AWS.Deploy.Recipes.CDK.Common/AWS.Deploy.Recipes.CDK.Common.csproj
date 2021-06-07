@@ -8,6 +8,7 @@
     <PackageTags>AWS;Amazon;Deploy</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/aws/aws-dotnet-deploy</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -84,9 +85,8 @@
     </Task>
   </UsingTask>
 
-<Target Name="SetupNuGetCache" AfterTargets="Build">
-  <Exec Command="dotnet pack $(MSBuildProjectFile) --configuration=$(Configuration) --no-build"/>
-  <SetupLocalCache NuGetPackage="$(OutputPath)\..\$(PackageId).$(PackageVersion).nupkg" />
+<Target Name="SetupNuGetCache" AfterTargets="Pack">
+  <SetupLocalCache NuGetPackage="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" />
 </Target>
 
 <Import Project="..\AWS.Deploy.Constants\AWS.Deploy.Constants.projitems" Label="Shared" />
