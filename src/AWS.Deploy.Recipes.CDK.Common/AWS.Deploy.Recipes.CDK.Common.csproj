@@ -52,8 +52,8 @@
 
             Log.LogMessage(MessageImportance.High, "nugetCacheDirectory");
             Log.LogMessage(MessageImportance.High, nugetCacheDirectory);
-            Array.ForEach(Directory.GetFiles(nugetCacheDirectory), file => Log.LogMessage(MessageImportance.High, file));
             Directory.CreateDirectory(nugetCacheDirectory);
+            Array.ForEach(Directory.GetFiles(nugetCacheDirectory), file => Log.LogMessage(MessageImportance.High, file));
             File.Copy(NuGetPackage, Path.Combine(nugetCacheDirectory, Path.GetFileName(NuGetPackage)), true);
 
             var nugetCachePackage = Path.Combine(
