@@ -220,7 +220,7 @@ namespace AWS.Deploy.CLI.ServerMode.Controllers
 
             return Ok(output);
         }
-        
+
         /// <summary>
         /// Gets the list of existing deployments that are compatible with the session's project.
         /// </summary>
@@ -374,10 +374,7 @@ namespace AWS.Deploy.CLI.ServerMode.Controllers
 
         private IServiceProvider CreateSessionServiceProvider(string sessionId, string awsRegion)
         {
-            var interactiveServices = new SessionOrchestratorInteractiveService(sessionId, _hubContext);
             var services = new ServiceCollection();
-            services.AddSingleton<IOrchestratorInteractiveService>(interactiveServices);
-            services.AddSingleton<ICommandLineWrapper>(services => new CommandLineWrapper(interactiveServices, true));
             services.AddCustomServices();
             var serviceProvider = services.BuildServiceProvider();
 
