@@ -58,7 +58,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             return Task.FromResult<AWSCredentials>(testCredentials);
         }
 
-        [Fact(Skip = "Reason")]
+        [Fact]
         public async Task GetRecommendations()
         {
             var projectPath = Path.GetFullPath(Path.Combine("testapps", "WebAppNoDockerFile", "WebAppNoDockerFile.csproj"));
@@ -93,7 +93,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             }
         }
 
-        [Fact(Skip = "Reason")]
+        [Fact]
         public async Task GetRecommendationsWithEncryptedCredentials()
         {
             var projectPath = Path.GetFullPath(Path.Combine("testapps", "WebAppNoDockerFile", "WebAppNoDockerFile.csproj"));
@@ -161,6 +161,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             var cancelSource = new CancellationTokenSource();
 
             var serverTask = serverCommand.ExecuteAsync(cancelSource.Token);
+            var interactiveService = _serviceProvider.GetRequiredService<IToolInteractiveService>();
             try
             {
                 var baseUrl = $"http://localhost:{portNumber}/";
@@ -200,7 +201,9 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
                 await WaitForDeployment(restClient, sessionId);
 
+                interactiveService.WriteErrorLine("hello " + _stackName);
                 var stackStatus = await _cloudFormationHelper.GetStackStatus(_stackName);
+                interactiveService.WriteErrorLine("status " + stackStatus);
                 Assert.Equal(StackStatus.CREATE_COMPLETE, stackStatus);
 
                 Assert.True(logOutput.Length > 0);
@@ -208,7 +211,6 @@ namespace AWS.Deploy.CLI.IntegrationTests
             }
             catch (Exception ex)
             {
-                var interactiveService = _serviceProvider.GetRequiredService<IToolInteractiveService>();
                 interactiveService.WriteErrorLine(ex.Message);
                 interactiveService.WriteErrorLine(ex.StackTrace);
             }
