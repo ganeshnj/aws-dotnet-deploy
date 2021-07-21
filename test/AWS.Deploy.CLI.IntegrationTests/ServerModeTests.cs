@@ -165,7 +165,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             {
                 var baseUrl = $"http://localhost:{portNumber}/";
                 var restClient = new RestAPIClient(baseUrl, httpClient);
-                
+
                 await WaitTillServerModeReady(restClient);
 
                 var startSessionOutput = await restClient.StartDeploymentSessionAsync(new StartDeploymentSessionInput
@@ -181,10 +181,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                 await signalRClient.JoinSession(sessionId);
 
                 var logOutput = new StringBuilder();
-                signalRClient.ReceiveLogAllLogAction = (line) =>
-                {
-                    logOutput.AppendLine(line);
-                };
+                signalRClient.ReceiveLogAllLogAction = (line) => { logOutput.AppendLine(line); };
 
                 var getRecommendationOutput = await restClient.GetRecommendationsAsync(sessionId);
                 Assert.NotEmpty(getRecommendationOutput.Recommendations);
@@ -192,11 +189,12 @@ namespace AWS.Deploy.CLI.IntegrationTests
                 var fargateRecommendation = getRecommendationOutput.Recommendations.FirstOrDefault(x => string.Equals(x.RecipeId, "AspNetAppEcsFargate"));
                 Assert.NotNull(fargateRecommendation);
 
-                await restClient.SetDeploymentTargetAsync(sessionId, new SetDeploymentTargetInput
-                {
-                    NewDeploymentName = _stackName,
-                    NewDeploymentRecipeId = fargateRecommendation.RecipeId
-                });
+                await restClient.SetDeploymentTargetAsync(sessionId,
+                    new SetDeploymentTargetInput
+                    {
+                        NewDeploymentName = _stackName,
+                        NewDeploymentRecipeId = fargateRecommendation.RecipeId
+                    });
 
                 await restClient.StartDeploymentAsync(sessionId);
 
@@ -207,6 +205,12 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
                 Assert.True(logOutput.Length > 0);
                 Assert.Contains("Initiating deployment", logOutput.ToString());
+            }
+            catch (Exception ex)
+            {
+                var interactiveService = _serviceProvider.GetRequiredService<IToolInteractiveService>();
+                interactiveService.WriteErrorLine(ex.Message);
+                interactiveService.WriteErrorLine(ex.StackTrace);
             }
             finally
             {
