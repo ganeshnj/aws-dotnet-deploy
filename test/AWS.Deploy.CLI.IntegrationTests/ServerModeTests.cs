@@ -58,7 +58,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             return Task.FromResult<AWSCredentials>(testCredentials);
         }
 
-        [Fact]
+        [Fact(Skip = "Reason")]
         public async Task GetRecommendations()
         {
             var projectPath = Path.GetFullPath(Path.Combine("testapps", "WebAppNoDockerFile", "WebAppNoDockerFile.csproj"));
@@ -93,7 +93,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Reason")]
         public async Task GetRecommendationsWithEncryptedCredentials()
         {
             var projectPath = Path.GetFullPath(Path.Combine("testapps", "WebAppNoDockerFile", "WebAppNoDockerFile.csproj"));

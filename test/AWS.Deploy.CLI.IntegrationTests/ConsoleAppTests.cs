@@ -53,7 +53,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             Assert.NotNull(_interactiveService);
         }
 
-        [Theory]
+        [Theory(Skip = "Reason")]
         [InlineData("testapps", "ConsoleAppService", "ConsoleAppService.csproj")]
         [InlineData("testapps", "ConsoleAppTask", "ConsoleAppTask.csproj")]
         public async Task DefaultConfigurations(params string[] components)

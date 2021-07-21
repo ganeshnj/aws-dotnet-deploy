@@ -52,7 +52,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             Assert.NotNull(_interactiveService);
         }
 
-        [Fact]
+        [Fact(Skip = "Reason")]
         public async Task DefaultConfigurations()
         {
             _stackName = $"WebAppWithDockerFile{Guid.NewGuid().ToString().Split('-').Last()}";
