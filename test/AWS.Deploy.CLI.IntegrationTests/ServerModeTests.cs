@@ -151,7 +151,8 @@ namespace AWS.Deploy.CLI.IntegrationTests
         [Fact]
         public async Task WebFargateDeploymentNoConfigChanges()
         {
-            _stackName = "ServerModeWebFargate-" + DateTime.UtcNow.Ticks;
+            // _stackName = "ServerModeWebFargate-" + DateTime.UtcNow.Ticks;
+            _stackName = $"ServerModeWebFargate{Guid.NewGuid().ToString().Split('-').Last()}";
 
             var projectPath = Path.Combine("testapps", "WebAppWithDockerFile", "WebAppWithDockerFile.csproj");
             var portNumber = 4001;
