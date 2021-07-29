@@ -147,4 +147,13 @@ namespace AWS.Deploy.Orchestration
     {
         public InvalidAWSDeployRecipesCDKCommonVersionException(string message, Exception? innerException = null) : base(message, innerException) { }
     }
+
+    /// <summary>
+    /// Exception thrown if an AWS Resource is not found or does not exist.
+    /// </summary>
+    [AWSDeploymentExpectedException]
+    public class AWSResourceNotFoundException : Exception
+    {
+        public AWSResourceNotFoundException(string message, Exception? innerException = null) : base(message, innerException) { }
+    }
 }

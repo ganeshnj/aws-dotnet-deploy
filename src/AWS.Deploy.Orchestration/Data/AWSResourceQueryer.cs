@@ -1,10 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.CloudFormation;
 using Amazon.CloudFormation.Model;
 using Amazon.EC2;
 using Amazon.EC2.Model;
@@ -14,8 +16,11 @@ using Amazon.ECS;
 using Amazon.ECS.Model;
 using Amazon.ElasticBeanstalk;
 using Amazon.ElasticBeanstalk.Model;
+using Amazon.ElasticLoadBalancingV2;
+using Amazon.ElasticLoadBalancingV2.Model;
 using Amazon.IdentityManagement;
 using Amazon.IdentityManagement.Model;
+using Amazon.S3;
 using Amazon.SecurityToken;
 using Amazon.SecurityToken.Model;
 using AWS.Deploy.Common;
@@ -24,6 +29,10 @@ namespace AWS.Deploy.Orchestration.Data
 {
     public interface IAWSResourceQueryer
     {
+        Task<StackResourceDetail> DescribeCloudFormationResource(string stackName, string logicalId);
+        Task<EnvironmentDescription> DescribeElasticBeanstalkEnvironment(string environmentId);
+        Task<Amazon.ElasticLoadBalancingV2.Model.LoadBalancer> DescribeElasticLoadBalancer(string loadBalancerArn);
+        Task<S3Region> GetS3BucketLocation(string bucketName);
         Task<List<Cluster>> ListOfECSClusters();
         Task<List<ApplicationDescription>> ListOfElasticBeanstalkApplications();
         Task<List<EnvironmentDescription>> ListOfElasticBeanstalkEnvironments(string? applicationName);
@@ -47,6 +56,65 @@ namespace AWS.Deploy.Orchestration.Data
         public AWSResourceQueryer(IAWSClientFactory awsClientFactory)
         {
             _awsClientFactory = awsClientFactory;
+        }
+
+        public async Task<StackResourceDetail> DescribeCloudFormationResource(string stackName, string logicalId)
+        {
+            var cfClient = _awsClientFactory.GetAWSClient<IAmazonCloudFormation>();
+
+            var resource = await cfClient.DescribeStackResourceAsync(new DescribeStackResourceRequest {
+                LogicalResourceId = logicalId,
+                StackName = stackName
+            });
+
+            return resource.StackResourceDetail;
+        }
+
+        public async Task<EnvironmentDescription> DescribeElasticBeanstalkEnvironment(string environmentId)
+        {
+            var beanstalkClient = _awsClientFactory.GetAWSClient<IAmazonElasticBeanstalk>();
+
+            var environment = await beanstalkClient.DescribeEnvironmentsAsync(new DescribeEnvironmentsRequest {
+                EnvironmentNames = new List<string> { environmentId }
+            });
+
+            if (!environment.Environments.Any())
+            {
+                throw new AWSResourceNotFoundException($"The elastic beanstalk environment '{environmentId}' does not exist.");
+            }
+
+            return environment.Environments.First();
+        }
+
+        public async Task<Amazon.ElasticLoadBalancingV2.Model.LoadBalancer> DescribeElasticLoadBalancer(string loadBalancerArn)
+        {
+            var elasticLoadBalancingClient = _awsClientFactory.GetAWSClient<IAmazonElasticLoadBalancingV2>();
+
+            var loadBalancers = await elasticLoadBalancingClient.DescribeLoadBalancersAsync(new DescribeLoadBalancersRequest
+            {
+                LoadBalancerArns = new List<string> { loadBalancerArn }
+            });
+
+            if (!loadBalancers.LoadBalancers.Any())
+            {
+                throw new AWSResourceNotFoundException($"The load balancer '{loadBalancerArn}' does not exist.");
+            }
+
+            return loadBalancers.LoadBalancers.First();
+        }
+
+        public async Task<S3Region> GetS3BucketLocation(string bucketName)
+        {
+            if (string.IsNullOrEmpty(bucketName))
+            {
+                throw new ArgumentNullException($"The bucket name is null or empty.");
+            }
+
+            var s3Client = _awsClientFactory.GetAWSClient<IAmazonS3>();
+
+            var location = await s3Client.GetBucketLocationAsync(bucketName);
+
+            return location.Location;
         }
 
         public async Task<List<Cluster>> ListOfECSClusters()
