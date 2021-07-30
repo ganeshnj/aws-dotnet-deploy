@@ -32,10 +32,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2 
       
-    - name: read-version
+    - name: Read Version
+      id: read-version
       run: |
         version=$(jq -r ".version" version.json)
         echo '::set-output name=VERSION::$((version))'
+        
+    - name: Set selected color
+      run: echo '::set-output name=SELECTED_COLOR::green'
+      id: random-color-generator
+      
+    - name: Get color
+      run: echo "The selected color is ${{ steps.random-color-generator.outputs.SELECTED_COLOR }}"
       
     - name: pull-request
       uses: repo-sync/pull-request@v2
