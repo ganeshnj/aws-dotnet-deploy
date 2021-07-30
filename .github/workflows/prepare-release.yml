@@ -37,7 +37,7 @@ jobs:
       run: |
         version=$(jq -r .version version.json)
         major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
-        minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
+        minor=$(echo $version | awk '{split($0, components, "."); print components[2]+1}')
         echo "::set-output name=VERSION::$major.$minor"
     - name: Commit and push next version
       id: commit-push
