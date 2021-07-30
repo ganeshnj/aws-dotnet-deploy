@@ -37,18 +37,14 @@ jobs:
       run: |
         version=$(jq -r ".version" version.json)
         echo "::set-output name=VERSION::$version"
-        
-    - name: Set selected color
-      run: echo '::set-output name=SELECTED_COLOR::green'
-      id: random-color-generator
-      
-    - name: Get color
-      run: echo "The selected color is ${{ steps.random-color-generator.outputs.SELECTED_COLOR }}"
       
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
         destination_branch: "main"
-        pr_title: 'Pulling ${{ steps.read-version.outputs.VERSION }} into main' # Title of pull request
+        pr_title: 'chore: release ${{ steps.read-version.outputs.VERSION }}'
+        pr_body: "Pulling ${{ github.ref }} into main"
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        pr_label: "auto-pr"
+
         
