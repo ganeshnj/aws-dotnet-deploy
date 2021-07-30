@@ -41,7 +41,7 @@ jobs:
       run: |
         pwd
         ls
-        content=$(jq -r ".version" = ${{ steps.build-next-version.outputs.VERSION }} version.json)
+        content=$(jq -r '".version" = ${{ steps.build-next-version.outputs.VERSION }}' version.json)
         echo $content > version.json
         git checkout -b chore/version-bump
         git add version.json
