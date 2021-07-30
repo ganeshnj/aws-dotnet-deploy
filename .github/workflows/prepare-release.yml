@@ -1,10 +1,9 @@
 # This is a basic workflow that is manually triggered to prepare the release
-# It creates the merge and version PR.
-
+# It creates two PRs
+# 1. Pulls target branch to main
+# 2. Increment minor version of target branch 
 name: Prepare Release
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   workflow_dispatch:
 
@@ -13,6 +12,7 @@ jobs:
     name: Pulling into main
     runs-on: ubuntu-latest
     outputs:
+      # set PR_URL as output of job to add in body of version bump PR
       PR_URL: ${{ steps.pull-request.outputs.pr_url }}
     steps:
     - name: Checkout
@@ -28,7 +28,7 @@ jobs:
       with:
         destination_branch: "main"
         pr_title: 'chore: release ${{ steps.read-current-version.outputs.VERSION }}'
-        pr_body: "Pulling ${{ github.ref }} into main"
+        pr_body: "Pulling ${{ github.ref }} into main."
         github_token: ${{ secrets.GITHUB_TOKEN }}
         pr_label: "auto-pr"
   version-bump:
@@ -45,7 +45,7 @@ jobs:
         major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
         minor=$(echo $version | awk '{split($0, components, "."); print components[2]+1}')
         echo "::set-output name=VERSION::$major.$minor"
-    - name: Commit and push next version
+    - name: Commit and Push next version
       id: commit-push
       run: |
         git config --global user.email "github-aws-sdk-dotnet-automation@amazon.com"
