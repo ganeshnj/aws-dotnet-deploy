@@ -32,10 +32,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2 
       
+    - name: read-version
+      run: version=$(jq -r ".version" version.json)
+        echo '::set-output name=VERSION::$version'
+      
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
         destination_branch: "main"
-        pr_title: 'Pulling ${{ jq -r ".version" version.json }} into master' # Title of pull request
+        pr_title: 'Pulling ${{ steps.read-version.outputs.VERSION }} into main' # Title of pull request
         github_token: ${{ secrets.GITHUB_TOKEN }}
         
