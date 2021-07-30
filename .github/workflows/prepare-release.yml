@@ -1,4 +1,5 @@
-# This is a basic workflow that is manually triggered
+# This is a basic workflow that is manually triggered to prepare the release
+# It creates the merge and version PR.
 
 name: Prepare Release
 
@@ -6,28 +7,31 @@ name: Prepare Release
 # or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
-    inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
-        required: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:        
- # This workflow contains a single job called "greet"
-  greet1:
-    # The type of runner that the job will run on
+jobs:
+  pulling-into-main:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2 
+    - name: Read Current Version
+      id: read-current-version
+      run: |
+        version=$(jq -r ".version" version.json)
+        echo "::set-output name=VERSION::$version"
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      with:
+        destination_branch: "main"
+        pr_title: 'chore: release ${{ steps.read-current-version.outputs.VERSION }}'
+        pr_body: "Pulling ${{ github.ref }} into main"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        pr_label: "auto-pr"
+  version-bump:
+    runs-on: ubuntu-latest
     steps:   
     - name: Checkout
       uses: actions/checkout@v2 
-      
     - name: Build Next Version
       id: build-next-version
       run: |
@@ -35,7 +39,6 @@ jobs:
         major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
         minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
         echo "::set-output name=VERSION::$major.$minor"
-
     - name: Commit and push next version
       id: commit-push
       run: |
@@ -49,7 +52,6 @@ jobs:
         git commit -m "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
         git push origin $branch
         echo "::set-output name=BRANCH::$branch"
-        
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
