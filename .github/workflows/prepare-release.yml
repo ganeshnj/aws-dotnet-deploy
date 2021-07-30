@@ -36,7 +36,7 @@ jobs:
       id: read-version
       run: |
         version=$(jq -r ".version" version.json)
-        echo '::set-output name=VERSION::$((version))'
+        echo "::set-output name=VERSION::$version"
         
     - name: Set selected color
       run: echo '::set-output name=SELECTED_COLOR::green'
