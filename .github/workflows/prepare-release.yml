@@ -46,7 +46,7 @@ jobs:
         git checkout -b chore/version-bump
         git add version.json
         git commit -m "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
-        git push
+        git push origin chore/version-bump
         
     - name: pull-request
       uses: repo-sync/pull-request@v2
