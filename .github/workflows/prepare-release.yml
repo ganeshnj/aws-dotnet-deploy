@@ -31,3 +31,7 @@ jobs:
       
     - name: Checkout
       uses: actions/checkout@v2 
+      
+    - name: CurrentVersion
+      run: |
+        jq -r ".version" version.json
