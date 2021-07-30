@@ -33,8 +33,9 @@ jobs:
       uses: actions/checkout@v2 
       
     - name: read-version
-      run: version=$(jq -r ".version" version.json)
-        echo '::set-output name=VERSION::$version'
+      run: |
+        version=$(jq -r ".version" version.json)
+        echo '::set-output name=VERSION::$((version))'
       
     - name: pull-request
       uses: repo-sync/pull-request@v2
