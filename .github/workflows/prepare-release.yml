@@ -32,6 +32,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2 
       
-    - name: CurrentVersion
-      run: |
-        jq -r ".version" version.json
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      with:
+        destination_branch: "main"
+        pr_title: 'Pulling ${{ jq -r ".version" version.json }} into master' # Title of pull request
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        
