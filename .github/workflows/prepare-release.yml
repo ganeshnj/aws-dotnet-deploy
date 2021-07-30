@@ -27,6 +27,7 @@ jobs:
     steps:   
     - name: Checkout
       uses: actions/checkout@v2 
+      
     - name: Build Next Version
       id: build-next-version
       run: |
@@ -34,12 +35,12 @@ jobs:
         major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
         minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
         echo "::set-output name=VERSION::$major.$minor"
-        
-    - name: Checkout
-      uses: actions/checkout@v2 
+
     - name: Update version
       id: update-version
       run: |
+        pwd
+        ls
         content=$(jq -r ".version" = ${{ steps.build-next-version.outputs.VERSION }} version.json)
         echo $content > version.json
         git checkout -b chore/version-bump
