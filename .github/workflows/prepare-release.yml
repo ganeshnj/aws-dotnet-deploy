@@ -17,61 +17,7 @@ on:
         required: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # This workflow contains a single job called "greet"
-  greet:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
-      
-    - name: Checkout
-      uses: actions/checkout@v2 
-      
-    - name: Read Current Version
-      id: read-current-version
-      run: |
-        version=$(jq -r ".version" version.json)
-        echo "::set-output name=VERSION::$version"
-      
-    - name: pull-request
-      uses: repo-sync/pull-request@v2
-      with:
-        destination_branch: "main"
-        pr_title: 'chore: release ${{ steps.read-current-version.outputs.VERSION }}'
-        pr_body: "Pulling ${{ github.ref }} into main"
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_label: "auto-pr"
-
-    - name: Build Next Version
-      id: build-next-version
-      run: |
-        version=$(jq -r ".version" version.json)
-        major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
-        minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
-        echo "::set-output name=VERSION::$major.$minor"
-        
-    - name: Update version
-      id: update-version
-      run: |
-        content=$(jq -r ".version" = ${{ steps.build-next-version.outputs.VERSION }} version.json)
-        echo $content > version.json
-        git checkout -b chore/version-bump
-        git add version.json
-        git commit -m "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
-        
-    - name: pull-request
-      uses: repo-sync/pull-request@v2
-      with:
-        destination_branch: "dev"
-        pr_title: "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_label: "auto-pr"
-        
+jobs:        
  # This workflow contains a single job called "greet"
   greet1:
     # The type of runner that the job will run on
