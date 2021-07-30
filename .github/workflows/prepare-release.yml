@@ -35,7 +35,7 @@ jobs:
     - name: Build Next Version
       id: build-next-version
       run: |
-        version=$(jq -r ".version" version.json)
+        version=$(jq -r .version version.json)
         major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
         minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
         echo "::set-output name=VERSION::$major.$minor"
