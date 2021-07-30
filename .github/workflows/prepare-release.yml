@@ -36,22 +36,24 @@ jobs:
         minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
         echo "::set-output name=VERSION::$major.$minor"
 
-    - name: Update version
-      id: update-version
+    - name: Commit and push next version
+      id: commit-push
       run: |
         git config --global user.email "github-aws-sdk-dotnet-automation@amazon.com"
         git config --global user.name "aws-sdk-dotnet-automation"
         content=$(jq -r '.version = ${{ steps.build-next-version.outputs.VERSION }}' version.json)
         echo $content > version.json
-        git checkout -b chore/version-bump-${{ steps.build-next-version.outputs.VERSION }}
+        branch=chore/version-bump-${{ steps.build-next-version.outputs.VERSION }}
+        git checkout -b $branch
         git add version.json
         git commit -m "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
-        git push origin chore/version-bump-${{ steps.build-next-version.outputs.VERSION }}
+        git push origin $branch
+        echo "::set-output name=BRANCH::$branch"
         
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
-        source_branch: chore/version-bump-${{ steps.build-next-version.outputs.VERSION }}
+        source_branch: ${{ steps.commit-push.outputs.BRANCH }}
         destination_branch: "dev"
         pr_title: "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
         github_token: ${{ secrets.GITHUB_TOKEN }}
