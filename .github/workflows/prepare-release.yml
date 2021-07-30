@@ -32,8 +32,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2 
       
-    - name: Read Version
-      id: read-version
+    - name: Read Current Version
+      id: read-current-version
       run: |
         version=$(jq -r ".version" version.json)
         echo "::set-output name=VERSION::$version"
@@ -42,9 +42,34 @@ jobs:
       uses: repo-sync/pull-request@v2
       with:
         destination_branch: "main"
-        pr_title: 'chore: release ${{ steps.read-version.outputs.VERSION }}'
+        pr_title: 'chore: release ${{ steps.read-current-version.outputs.VERSION }}'
         pr_body: "Pulling ${{ github.ref }} into main"
         github_token: ${{ secrets.GITHUB_TOKEN }}
         pr_label: "auto-pr"
 
+    - name: Build Next Version
+      id: build-next-version
+      run: |
+        version=$(jq -r ".version" version.json)
+        major=$(echo $version | awk '{split($0, components, "."); print components[1]}')
+        minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
+        echo "::set-output name=VERSION::$major.$minor"
+        
+    - name: Update version
+      id: update-version
+      run: |
+        content=$(jq -r ".version" = ${{ steps.build-next-version.outputs.VERSION }} version.json)
+        echo $content > version.json
+        git checkout -b chore/version-bump
+        git add version.json
+        git commit -m "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
+        
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      with:
+        destination_branch: "dev"
+        pr_title: "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        pr_label: "auto-pr"
+        
         
