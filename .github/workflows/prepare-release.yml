@@ -50,6 +50,7 @@ jobs:
     - name: pull-request
       uses: repo-sync/pull-request@v2
       with:
+        source_branch: chore/version-bump
         destination_branch: "dev"
         pr_title: "build: version bump to ${{ steps.build-next-version.outputs.VERSION }}"
         github_token: ${{ secrets.GITHUB_TOKEN }}
