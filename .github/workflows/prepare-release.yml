@@ -27,7 +27,6 @@ jobs:
     steps:   
     - name: Checkout
       uses: actions/checkout@v2 
-
     - name: Build Next Version
       id: build-next-version
       run: |
@@ -36,6 +35,8 @@ jobs:
         minor=$(echo $version | awk '{split($0, components, "."); print components[2]}')
         echo "::set-output name=VERSION::$major.$minor"
         
+    - name: Checkout
+      uses: actions/checkout@v2 
     - name: Update version
       id: update-version
       run: |
