@@ -126,6 +126,8 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
                 {
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
+
+                _interactiveService.StdOutReaderToConsole();
             }
 
             _isDisposed = true;

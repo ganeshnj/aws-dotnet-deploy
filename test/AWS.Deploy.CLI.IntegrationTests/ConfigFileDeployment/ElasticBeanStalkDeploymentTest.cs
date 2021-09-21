@@ -97,6 +97,8 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
             // Verify application is deleted
             Assert.True(await _cloudFormationHelper.IsStackDeleted(_stackName), $"{_stackName} still exists.");
+
+            _interactiveService.StdOutReaderToConsole();
         }
 
         public void Dispose()
@@ -116,6 +118,8 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
                 {
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
+
+                _interactiveService.StdOutReaderToConsole();
             }
 
             _isDisposed = true;

@@ -70,7 +70,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             // Verify application is deployed and running
             Assert.Equal(StackStatus.CREATE_COMPLETE, await _cloudFormationHelper.GetStackStatus(_stackName));
 
-            var deployStdDebug = _interactiveService.StdDebugReader.ReadAllLines();
+            var deployStdDebug = _interactiveService.StdOutReader.ReadAllLines();
 
             var tempCdkProject = deployStdDebug.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
                 .Split(": ")[1]
@@ -145,6 +145,8 @@ namespace AWS.Deploy.CLI.IntegrationTests
                 {
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
+
+                _interactiveService.StdOutReaderToConsole();
             }
 
             _isDisposed = true;
