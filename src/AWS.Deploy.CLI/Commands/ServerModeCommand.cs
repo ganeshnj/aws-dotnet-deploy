@@ -46,12 +46,26 @@ namespace AWS.Deploy.CLI.Commands
 
             var url = $"http://localhost:{_port}";
 
+            var input = new ServerModeCommandHandlerInput
+            {
+                Port = _port,
+                ParentPid = _parentPid,
+                UnsecureMode = _noEncryptionKeyInfo,
+                Diagnostics = _diagnostics
+            };
+
+            var inputService = new CommandInputService
+            {
+                ServerModeInput = input
+            };
+
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls(url)
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<IEncryptionProvider>(encryptionProvider);
+                    services.AddSingleton(encryptionProvider);
+                    services.AddSingleton(inputService);
                 })
                 .UseStartup<Startup>();
 
