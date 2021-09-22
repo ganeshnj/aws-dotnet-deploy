@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AWS.Deploy.Orchestration.CDK
@@ -27,6 +28,7 @@ namespace AWS.Deploy.Orchestration.CDK
     {
         private readonly ICDKInstaller _cdkInstaller;
         private readonly INPMPackageInitializer _npmPackageInitializer;
+        private static readonly SemaphoreSlim s_pool = new(1,1);
 
         public CDKManager(ICDKInstaller cdkInstaller, INPMPackageInitializer npmPackageInitializer)
         {
@@ -36,6 +38,8 @@ namespace AWS.Deploy.Orchestration.CDK
 
         public async Task EnsureCompatibleCDKExists(string workingDirectory, Version cdkVersion)
         {
+            await s_pool.WaitAsync();
+
             var globalCDKVersionResult = await _cdkInstaller.GetGlobalVersion();
             if (globalCDKVersionResult.Success && globalCDKVersionResult.Result?.CompareTo(cdkVersion) >= 0)
             {
@@ -56,6 +60,7 @@ namespace AWS.Deploy.Orchestration.CDK
             }
 
             await _cdkInstaller.Install(workingDirectory, cdkVersion);
+            s_pool.Release();
         }
     }
 }
