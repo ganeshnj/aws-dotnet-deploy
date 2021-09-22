@@ -90,7 +90,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                 .Trim();
 
             Assert.NotNull(tempCdkProject);
-            Assert.False(Directory.Exists(tempCdkProject), $"{tempCdkProject} still exists");
+            Assert.False(Directory.Exists(tempCdkProject), $"{tempCdkProject} must not exist.");
 
             // list
             var listArgs = new[] { "list-deployments" };
