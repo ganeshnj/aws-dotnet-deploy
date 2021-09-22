@@ -75,7 +75,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                 .Trim();
 
             Assert.NotNull(tempCdkProject);
-            Assert.False(Directory.Exists(tempCdkProject));
+            Assert.False(Directory.Exists(tempCdkProject), $"{tempCdkProject} still exists");
 
             // Example:     Endpoint: http://52.36.216.238/
             var applicationUrl = deployStdOut.First(line => line.Trim().StartsWith($"Endpoint"))
