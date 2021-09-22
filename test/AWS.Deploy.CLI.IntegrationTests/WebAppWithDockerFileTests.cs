@@ -31,11 +31,6 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
         public WebAppWithDockerFileTests()
         {
-            _httpHelper = new HttpHelper();
-
-            var cloudFormationClient = new AmazonCloudFormationClient();
-            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
-
             var ecsClient = new AmazonECSClient();
             _ecsHelper = new ECSHelper(ecsClient);
 
@@ -51,6 +46,11 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
             _interactiveService = serviceProvider.GetService<InMemoryInteractiveService>();
             Assert.NotNull(_interactiveService);
+
+            _httpHelper = new HttpHelper(_interactiveService);
+
+            var cloudFormationClient = new AmazonCloudFormationClient();
+            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
 
             _testAppManager = new TestAppManager();
         }
@@ -76,16 +76,14 @@ namespace AWS.Deploy.CLI.IntegrationTests
             var cluster = await _ecsHelper.GetCluster(_stackName);
             Assert.Equal("ACTIVE", cluster.Status);
 
-            var deployStdDebug = _interactiveService.StdOutReader.ReadAllLines();
+            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
-            var tempCdkProject = deployStdDebug.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
+            var tempCdkProject = deployStdOut.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
                 .Split(": ")[1]
                 .Trim();
 
             Assert.NotNull(tempCdkProject);
             Assert.False(Directory.Exists(tempCdkProject));
-
-            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
             var applicationUrl = deployStdOut.First(line => line.Trim().StartsWith("Endpoint:"))
                 .Split(" ")[1]
@@ -192,7 +190,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
 
-                _interactiveService.StdOutReaderToConsole();
+                _interactiveService.ReadStdOutToEnd();
             }
 
             _isDisposed = true;

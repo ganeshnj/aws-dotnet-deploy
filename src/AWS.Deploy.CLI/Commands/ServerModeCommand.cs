@@ -9,8 +9,10 @@ using System.Security.Cryptography;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using AWS.Deploy.CLI.Commands.CommandHandlerInput;
 using AWS.Deploy.CLI.ServerMode;
 using AWS.Deploy.CLI.ServerMode.Services;
+using AWS.Deploy.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,13 +24,15 @@ namespace AWS.Deploy.CLI.Commands
         private readonly int _port;
         private readonly int? _parentPid;
         private readonly bool _noEncryptionKeyInfo;
+        private readonly bool _diagnostics;
 
-        public ServerModeCommand(IToolInteractiveService interactiveService, int port, int? parentPid, bool noEncryptionKeyInfo)
+        public ServerModeCommand(IToolInteractiveService interactiveService, int port, int? parentPid, bool noEncryptionKeyInfo, bool diagnostics)
         {
             _interactiveService = interactiveService;
             _port = port;
             _parentPid = parentPid;
             _noEncryptionKeyInfo = noEncryptionKeyInfo;
+            _diagnostics = diagnostics;
         }
 
         public async Task ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -65,8 +69,12 @@ namespace AWS.Deploy.CLI.Commands
                     process.EnableRaisingEvents = true;
                     process.Exited += async (sender, args) => { await ShutDownHost(host, cancellationToken); };
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    if (_diagnostics)
+                    {
+                        _interactiveService.WriteErrorLine(exception.PrettyPrint());
+                    }
                     return;
                 }
 

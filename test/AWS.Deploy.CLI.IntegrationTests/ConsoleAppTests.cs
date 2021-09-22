@@ -31,9 +31,6 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
         public ConsoleAppTests()
         {
-            var cloudFormationClient = new AmazonCloudFormationClient();
-            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
-
             var ecsClient = new AmazonECSClient();
             _ecsHelper = new ECSHelper(ecsClient);
 
@@ -52,6 +49,9 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
             _interactiveService = serviceProvider.GetService<InMemoryInteractiveService>();
             Assert.NotNull(_interactiveService);
+
+            var cloudFormationClient = new AmazonCloudFormationClient();
+            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
 
             _testAppManager = new TestAppManager();
         }
@@ -83,9 +83,9 @@ namespace AWS.Deploy.CLI.IntegrationTests
             var logMessages = await _cloudWatchLogsHelper.GetLogMessages(logGroup);
             Assert.Contains("Hello World!", logMessages);
 
-            var deployStdDebug = _interactiveService.StdOutReader.ReadAllLines();
+            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
-            var tempCdkProject = deployStdDebug.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
+            var tempCdkProject = deployStdOut.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
                 .Split(": ")[1]
                 .Trim();
 
@@ -97,8 +97,8 @@ namespace AWS.Deploy.CLI.IntegrationTests
             await _app.Run(listArgs);
 
             // Verify stack exists in list of deployments
-            var listDeployStdOut = _interactiveService.StdOutReader.ReadAllLines();
-            Assert.Contains(listDeployStdOut, (deployment) => _stackName.Equals(deployment));
+            var listStdOut = _interactiveService.StdOutReader.ReadAllLines();
+            Assert.Contains(listStdOut, (deployment) => _stackName.Equals(deployment));
 
             // Arrange input for delete
             await _interactiveService.StdInWriter.WriteAsync("y"); // Confirm delete
@@ -130,7 +130,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
 
-                _interactiveService.StdOutReaderToConsole();
+                _interactiveService.ReadStdOutToEnd();
             }
 
             _isDisposed = true;

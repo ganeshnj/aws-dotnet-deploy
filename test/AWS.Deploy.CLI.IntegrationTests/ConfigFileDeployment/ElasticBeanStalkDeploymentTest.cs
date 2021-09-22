@@ -30,11 +30,6 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
         public ElasticBeanStalkDeploymentTest()
         {
-            _httpHelper = new HttpHelper();
-
-            var cloudFormationClient = new AmazonCloudFormationClient();
-            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
-
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddCustomServices();
@@ -47,6 +42,11 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
             _interactiveService = serviceProvider.GetService<InMemoryInteractiveService>();
             Assert.NotNull(_interactiveService);
+
+            _httpHelper = new HttpHelper(_interactiveService);
+
+            var cloudFormationClient = new AmazonCloudFormationClient();
+            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
 
             _testAppManager = new TestAppManager();
         }
@@ -98,7 +98,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
             // Verify application is deleted
             Assert.True(await _cloudFormationHelper.IsStackDeleted(_stackName), $"{_stackName} still exists.");
 
-            _interactiveService.StdOutReaderToConsole();
+            _interactiveService.ReadStdOutToEnd();
         }
 
         public void Dispose()
@@ -119,7 +119,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
 
-                _interactiveService.StdOutReaderToConsole();
+                _interactiveService.ReadStdOutToEnd();
             }
 
             _isDisposed = true;

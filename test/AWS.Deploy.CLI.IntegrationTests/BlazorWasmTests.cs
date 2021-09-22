@@ -30,11 +30,6 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
         public BlazorWasmTests()
         {
-            _httpHelper = new HttpHelper();
-
-            _cloudFormationHelper = new CloudFormationHelper(new AmazonCloudFormationClient());
-            _cloudFrontHelper = new CloudFrontHelper(new Amazon.CloudFront.AmazonCloudFrontClient());
-
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddCustomServices();
@@ -47,6 +42,12 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
             _interactiveService = serviceProvider.GetService<InMemoryInteractiveService>();
             Assert.NotNull(_interactiveService);
+
+            _httpHelper = new HttpHelper(_interactiveService);
+
+            var cloudFormationClient = new AmazonCloudFormationClient();
+            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
+            _cloudFrontHelper = new CloudFrontHelper(new Amazon.CloudFront.AmazonCloudFrontClient());
 
             _testAppManager = new TestAppManager();
         }
@@ -70,16 +71,14 @@ namespace AWS.Deploy.CLI.IntegrationTests
             // Verify application is deployed and running
             Assert.Equal(StackStatus.CREATE_COMPLETE, await _cloudFormationHelper.GetStackStatus(_stackName));
 
-            var deployStdDebug = _interactiveService.StdOutReader.ReadAllLines();
+            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
-            var tempCdkProject = deployStdDebug.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
+            var tempCdkProject = deployStdOut.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
                 .Split(": ")[1]
                 .Trim();
 
             Assert.NotNull(tempCdkProject);
             Assert.False(Directory.Exists(tempCdkProject));
-
-            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
             // Example URL string: BlazorWasm5068e7a879d5ee.EndpointURL = http://blazorwasm5068e7a879d5ee-blazorhostc7106839-a2585dcq9xve.s3-website-us-west-2.amazonaws.com/
             var applicationUrl = deployStdOut.First(line => line.Contains("https://") && line.Contains("cloudfront.net/"))
@@ -146,7 +145,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
 
-                _interactiveService.StdOutReaderToConsole();
+                _interactiveService.ReadStdOutToEnd();
             }
 
             _isDisposed = true;

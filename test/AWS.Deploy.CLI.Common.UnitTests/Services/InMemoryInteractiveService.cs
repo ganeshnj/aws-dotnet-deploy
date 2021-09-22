@@ -40,6 +40,8 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
 
         public void Write(string message)
         {
+            Debug.Write(message);
+
             // Save BaseStream position, it must be only modified by the consumer of StdOutReader
             // After writing to the BaseStream, we will reset it to the original position.
             var stdOutReaderPosition = StdOutReader.BaseStream.Position;
@@ -111,7 +113,6 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
             return readLine;
         }
 
-        public bool Diagnostics { get; set; }
         public bool DisableInteractive { get; set; }
 
         public ConsoleKeyInfo ReadKey(bool intercept)
@@ -135,7 +136,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
             return key;
         }
 
-        public void StdOutReaderToConsole()
+        public void ReadStdOutToEnd()
         {
             lock (_locker)
             {

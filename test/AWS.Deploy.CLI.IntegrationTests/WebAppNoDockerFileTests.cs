@@ -29,11 +29,6 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
         public WebAppNoDockerFileTests()
         {
-            _httpHelper = new HttpHelper();
-
-            var cloudFormationClient = new AmazonCloudFormationClient();
-            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
-
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddCustomServices();
@@ -46,6 +41,11 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
             _interactiveService = serviceProvider.GetService<InMemoryInteractiveService>();
             Assert.NotNull(_interactiveService);
+
+            _httpHelper = new HttpHelper(_interactiveService);
+
+            var cloudFormationClient = new AmazonCloudFormationClient();
+            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
 
             _testAppManager = new TestAppManager();
         }
@@ -68,16 +68,14 @@ namespace AWS.Deploy.CLI.IntegrationTests
             // Verify application is deployed and running
             Assert.Equal(StackStatus.CREATE_COMPLETE, await _cloudFormationHelper.GetStackStatus(_stackName));
 
-            var deployStdDebug = _interactiveService.StdOutReader.ReadAllLines();
+            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
-            var tempCdkProject = deployStdDebug.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
+            var tempCdkProject = deployStdOut.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
                 .Split(": ")[1]
                 .Trim();
 
             Assert.NotNull(tempCdkProject);
             Assert.False(Directory.Exists(tempCdkProject));
-
-            var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
             // Example:     Endpoint: http://52.36.216.238/
             var applicationUrl = deployStdOut.First(line => line.Trim().StartsWith($"Endpoint"))
@@ -92,8 +90,8 @@ namespace AWS.Deploy.CLI.IntegrationTests
             await _app.Run(listArgs);
 
             // Verify stack exists in list of deployments
-            var listDeployStdOut = _interactiveService.StdOutReader.ReadAllLines();
-            Assert.Contains(listDeployStdOut, (deployment) => _stackName.Equals(deployment));
+            var listStdOut = _interactiveService.StdOutReader.ReadAllLines();
+            Assert.Contains(listStdOut, (deployment) => _stackName.Equals(deployment));
 
             // Arrange input for delete
             await _interactiveService.StdInWriter.WriteAsync("y"); // Confirm delete
@@ -125,7 +123,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
 
-                _interactiveService.StdOutReaderToConsole();
+                _interactiveService.ReadStdOutToEnd();
             }
 
             _isDisposed = true;

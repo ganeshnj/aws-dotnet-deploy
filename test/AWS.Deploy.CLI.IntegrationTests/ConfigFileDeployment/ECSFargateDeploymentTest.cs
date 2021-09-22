@@ -33,11 +33,6 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
         public ECSFargateDeploymentTest()
         {
-            _httpHelper = new HttpHelper();
-
-            var cloudFormationClient = new AmazonCloudFormationClient();
-            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
-
             var ecsClient = new AmazonECSClient();
             _ecsHelper = new ECSHelper(ecsClient);
 
@@ -53,6 +48,11 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
             _interactiveService = serviceProvider.GetService<InMemoryInteractiveService>();
             Assert.NotNull(_interactiveService);
+
+            var cloudFormationClient = new AmazonCloudFormationClient();
+            _cloudFormationHelper = new CloudFormationHelper(cloudFormationClient);
+
+            _httpHelper = new HttpHelper(_interactiveService);
 
             _testAppManager = new TestAppManager();
         }
@@ -127,7 +127,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
                     _cloudFormationHelper.DeleteStack(_stackName).GetAwaiter().GetResult();
                 }
 
-                _interactiveService.StdOutReaderToConsole();
+                _interactiveService.ReadStdOutToEnd();
             }
 
             _isDisposed = true;
