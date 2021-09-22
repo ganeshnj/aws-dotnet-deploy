@@ -63,7 +63,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
             _stackName = userDeploymentSettings.StackName;
 
-            var deployArgs = new[] { "deploy", "--project-path", projectPath, "--apply", configFilePath, "--silent" };
+            var deployArgs = new[] { "deploy", "--project-path", projectPath, "--apply", configFilePath, "--silent", "--diagnostics" };
             await _app.Run(deployArgs);
 
             // Verify application is deployed and running
@@ -80,7 +80,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
             await _httpHelper.WaitUntilSuccessStatusCode(applicationUrl, TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(5));
 
             // list
-            var listArgs = new[] { "list-deployments" };
+            var listArgs = new[] { "list-deployments", "--diagnostics" };
             await _app.Run(listArgs);
 
             // Verify stack exists in list of deployments
@@ -90,7 +90,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
             // Arrange input for delete
             await _interactiveService.StdInWriter.WriteAsync("y"); // Confirm delete
             await _interactiveService.StdInWriter.FlushAsync();
-            var deleteArgs = new[] { "delete-deployment", _stackName };
+            var deleteArgs = new[] { "delete-deployment", _stackName, "--diagnostics" };
 
             // Delete
             await _app.Run(deleteArgs);

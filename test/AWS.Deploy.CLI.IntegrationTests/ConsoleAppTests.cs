@@ -90,7 +90,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             Assert.False(Directory.Exists(tempCdkProject), $"{tempCdkProject} must not exist.");
 
             // list
-            var listArgs = new[] { "list-deployments" };
+            var listArgs = new[] { "list-deployments", "--diagnostics" };
             await _app.Run(listArgs);
 
             // Verify stack exists in list of deployments
@@ -100,7 +100,7 @@ namespace AWS.Deploy.CLI.IntegrationTests
             // Arrange input for delete
             await _interactiveService.StdInWriter.WriteAsync("y"); // Confirm delete
             await _interactiveService.StdInWriter.FlushAsync();
-            var deleteArgs = new[] { "delete-deployment", _stackName };
+            var deleteArgs = new[] { "delete-deployment", _stackName, "--diagnostics" };
 
             // Delete
             await _app.Run(deleteArgs);
