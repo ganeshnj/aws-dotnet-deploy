@@ -70,11 +70,8 @@ namespace AWS.Deploy.CLI.IntegrationTests
 
             var deployStdOut = _interactiveService.StdOutReader.ReadAllLines();
 
-            var tempCdkProject = deployStdOut.FirstOrDefault(line => line.Trim().Contains("The CDK Project is saved at: "))?
-                .Split(": ")[1]
-                .Trim();
-
-            Assert.NotNull(tempCdkProject);
+            var tempCdkProjectLine = deployStdOut.First(line => line.StartsWith("The CDK Project is saved at:"));
+            var tempCdkProject = tempCdkProjectLine.Split(":")[1].Trim();
             Assert.False(Directory.Exists(tempCdkProject), $"{tempCdkProject} must not exist.");
 
             // Example:     Endpoint: http://52.36.216.238/
