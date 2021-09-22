@@ -10,7 +10,9 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
 {
     public class InMemoryInteractiveService : IToolInteractiveService, IOrchestratorInteractiveService
     {
-        private static readonly object _locker = new object();
+        private static readonly object s_readToEndLocker = new object();
+        private readonly object _writeLocker = new object();
+        private readonly object _readLocker = new object();
         private long _stdOutWriterPosition;
         private long _stdInReaderPosition;
         private readonly StreamWriter _stdOutWriter;
@@ -40,42 +42,48 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
 
         public void Write(string message)
         {
-            Debug.Write(message);
+            lock (_writeLocker)
+            {
+                Debug.Write(message);
 
-            // Save BaseStream position, it must be only modified by the consumer of StdOutReader
-            // After writing to the BaseStream, we will reset it to the original position.
-            var stdOutReaderPosition = StdOutReader.BaseStream.Position;
+                // Save BaseStream position, it must be only modified by the consumer of StdOutReader
+                // After writing to the BaseStream, we will reset it to the original position.
+                var stdOutReaderPosition = StdOutReader.BaseStream.Position;
 
-            // Reset the BaseStream to the last save position to continue writing from where we left.
-            _stdOutWriter.BaseStream.Position = _stdOutWriterPosition;
-            _stdOutWriter.Write(message);
-            _stdOutWriter.Flush();
+                // Reset the BaseStream to the last save position to continue writing from where we left.
+                _stdOutWriter.BaseStream.Position = _stdOutWriterPosition;
+                _stdOutWriter.Write(message);
+                _stdOutWriter.Flush();
 
-            // Save the BaseStream position for future writes.
-            _stdOutWriterPosition = _stdOutWriter.BaseStream.Position;
+                // Save the BaseStream position for future writes.
+                _stdOutWriterPosition = _stdOutWriter.BaseStream.Position;
 
-            // Reset the BaseStream position to the original position
-            StdOutReader.BaseStream.Position = stdOutReaderPosition;
+                // Reset the BaseStream position to the original position
+                StdOutReader.BaseStream.Position = stdOutReaderPosition;
+            }
         }
 
         public void WriteLine(string message)
         {
-            Debug.WriteLine(message);
+            lock (_writeLocker)
+            {
+                Debug.WriteLine(message);
 
-            // Save BaseStream position, it must be only modified by the consumer of StdOutReader
-            // After writing to the BaseStream, we will reset it to the original position.
-            var stdOutReaderPosition = StdOutReader.BaseStream.Position;
+                // Save BaseStream position, it must be only modified by the consumer of StdOutReader
+                // After writing to the BaseStream, we will reset it to the original position.
+                var stdOutReaderPosition = StdOutReader.BaseStream.Position;
 
-            // Reset the BaseStream to the last save position to continue writing from where we left.
-            _stdOutWriter.BaseStream.Position = _stdOutWriterPosition;
-            _stdOutWriter.WriteLine(message);
-            _stdOutWriter.Flush();
+                // Reset the BaseStream to the last save position to continue writing from where we left.
+                _stdOutWriter.BaseStream.Position = _stdOutWriterPosition;
+                _stdOutWriter.WriteLine(message);
+                _stdOutWriter.Flush();
 
-            // Save the BaseStream position for future writes.
-            _stdOutWriterPosition = _stdOutWriter.BaseStream.Position;
+                // Save the BaseStream position for future writes.
+                _stdOutWriterPosition = _stdOutWriter.BaseStream.Position;
 
-            // Reset the BaseStream position to the original position
-            StdOutReader.BaseStream.Position = stdOutReaderPosition;
+                // Reset the BaseStream position to the original position
+                StdOutReader.BaseStream.Position = stdOutReaderPosition;
+            }
         }
 
         public void WriteDebugLine(string message)
@@ -90,27 +98,30 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
 
         public string ReadLine()
         {
-            var stdInWriterPosition = StdInWriter.BaseStream.Position;
-
-            // Reset the BaseStream to the last save position to continue writing from where we left.
-            _stdInReader.BaseStream.Position = _stdInReaderPosition;
-
-            var readLine = _stdInReader.ReadLine();
-
-            if (readLine == null)
+            lock (_readLocker)
             {
-                throw new InvalidOperationException();
+                var stdInWriterPosition = StdInWriter.BaseStream.Position;
+
+                // Reset the BaseStream to the last save position to continue writing from where we left.
+                _stdInReader.BaseStream.Position = _stdInReaderPosition;
+
+                var readLine = _stdInReader.ReadLine();
+
+                if (readLine == null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                // Save the BaseStream position for future reads.
+                _stdInReaderPosition = _stdInReader.BaseStream.Position;
+
+                // Reset the BaseStream position to the original position
+                StdInWriter.BaseStream.Position = stdInWriterPosition;
+
+                WriteLine(readLine);
+
+                return readLine;
             }
-
-            // Save the BaseStream position for future reads.
-            _stdInReaderPosition = _stdInReader.BaseStream.Position;
-
-            // Reset the BaseStream position to the original position
-            StdInWriter.BaseStream.Position = stdInWriterPosition;
-
-            WriteLine(readLine);
-
-            return readLine;
         }
 
         public bool DisableInteractive { get; set; }
@@ -138,7 +149,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.Services
 
         public void ReadStdOutToEnd()
         {
-            lock (_locker)
+            lock (s_readToEndLocker)
             {
                 // Save BaseStream position, it must be only modified by the consumer of StdOutReader
                 // After writing to the BaseStream, we will reset it to the original position.
