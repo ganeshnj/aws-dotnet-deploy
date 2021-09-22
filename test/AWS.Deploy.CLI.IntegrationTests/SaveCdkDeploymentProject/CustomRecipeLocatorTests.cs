@@ -24,8 +24,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.SaveCdkDeploymentProject
         public CustomRecipeLocatorTests()
         {
             _inMemoryInteractiveService = new InMemoryInteractiveService();
-            var consoleOrchestratorLogger = new ConsoleOrchestratorLogger(_inMemoryInteractiveService);
-            _commandLineWrapper = new CommandLineWrapper(consoleOrchestratorLogger);        }
+            _commandLineWrapper = new CommandLineWrapper(_inMemoryInteractiveService);        }
 
         [Fact]
         public async Task LocateCustomRecipePathsWithManifestFile()
