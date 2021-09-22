@@ -83,6 +83,7 @@ namespace AWS.Deploy.Orchestration
                 workingDirectory: cdkProjectPath,
                 environmentVariables: environmentVariables,
                 needAwsCredentials: true,
+                redirectIO: true,
                 streamOutputToInteractiveService: true);
 
             if (cdkDeploy.ExitCode != 0)
