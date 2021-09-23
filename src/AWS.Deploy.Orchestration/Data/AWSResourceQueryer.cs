@@ -28,6 +28,7 @@ using Amazon.S3;
 using Amazon.SecurityToken;
 using Amazon.SecurityToken.Model;
 using AWS.Deploy.Common;
+using AWS.Deploy.Orchestration.Utilities;
 
 namespace AWS.Deploy.Orchestration.Data
 {

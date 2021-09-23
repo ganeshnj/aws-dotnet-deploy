@@ -497,7 +497,8 @@ namespace AWS.Deploy.CLI.ServerMode.Controllers
                 awsCredentials ?? HttpContext.User.ToAWSCredentials() ??
                     throw new FailedToRetrieveAWSCredentialsException("The tool was not able to retrieve the AWS Credentials."),
                 state.AWSRegion,
-                state.AWSAccountId);
+                state.AWSAccountId,
+                false); // TODO: no diagnostic on server mode??
         }
 
         private Orchestrator CreateOrchestrator(SessionState state, IServiceProvider? serviceProvider = null, AWSCredentials? awsCredentials = null)
