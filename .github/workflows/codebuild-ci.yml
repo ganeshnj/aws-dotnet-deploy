@@ -23,5 +23,4 @@ jobs:
       - name: Run CodeBuild
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
-          # won't change aws ci name as that is not editable
           project-name: aws-dotnet-deploy-ci
