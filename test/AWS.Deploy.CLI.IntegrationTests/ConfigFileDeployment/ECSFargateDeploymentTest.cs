@@ -71,7 +71,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
             _clusterName = userDeploymentSettings.LeafOptionSettingItems["ECSCluster.NewClusterName"];
 
             var deployArgs = new[] { "deploy", "--project-path", projectPath, "--apply", configFilePath, "--silent", "--diagnostics" };
-            await _app.Run(deployArgs);
+            Assert.Equal(CommandReturnCodes.SUCCESS, await _app.Run(deployArgs));
 
             // Verify application is deployed and running
             Assert.Equal(StackStatus.CREATE_COMPLETE, await _cloudFormationHelper.GetStackStatus(_stackName));
@@ -91,7 +91,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
 
             // list
             var listArgs = new[] { "list-deployments", "--diagnostics" };
-            await _app.Run(listArgs);
+            Assert.Equal(CommandReturnCodes.SUCCESS, await _app.Run(listArgs));;
 
             // Verify stack exists in list of deployments
             var listDeployStdOut = _interactiveService.StdOutReader.ReadAllLines();
@@ -103,7 +103,7 @@ namespace AWS.Deploy.CLI.IntegrationTests.ConfigFileDeployment
             var deleteArgs = new[] { "delete-deployment", _stackName, "--diagnostics" };
 
             // Delete
-            await _app.Run(deleteArgs);
+            Assert.Equal(CommandReturnCodes.SUCCESS, await _app.Run(deleteArgs));;
 
             // Verify application is deleted
             Assert.True(await _cloudFormationHelper.IsStackDeleted(_stackName), $"{_stackName} still exists.");
